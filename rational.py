@@ -1,5 +1,5 @@
 # Модуль: Рациональные числа (дроби)
-# Автор: <Лунёва Е.П. (гр. 5382)>
+# Автор: Лунёва Е.П. (гр. 5382)
 #
 # Представление: Rational = (numerator, denominator)
 #   numerator   — целое число (Integer)
@@ -8,7 +8,7 @@
 # Пример: дробь -3/4 → ((1, 0, [3]), (0, [4]))
 
 """
-Aвтор модуля: <>
+Aвтор модуля: Лунева Е.П.
 """
 
 from typing import List, Tuple
@@ -72,7 +72,19 @@ def ADD_QQ_Q(a: Rational, b: Rational) -> Rational:
     Q-5: Сложение дробей.
     Использует: LCM_NN_N, MUL_ZZ_Z, ADD_ZZ_Z
     """
-    pass
+    num_a, den_a = a
+    num_b, den_b = b
+
+    lcm_den = LCM_NN_N(den_a, den_b)
+
+    mul_a = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_a))[0]
+    mul_b = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_b))[0]
+
+    term1 = MUL_ZZ_Z(num_a, mul_a)
+    term2 = MUL_ZZ_Z(num_b, mul_b)
+    res_num = ADD_ZZ_Z(term1, term2)
+
+    return RED_Q_Q((res_num, lcm_den))
 
 
 def SUB_QQ_Q(a: Rational, b: Rational) -> Rational:
@@ -80,7 +92,19 @@ def SUB_QQ_Q(a: Rational, b: Rational) -> Rational:
     Q-6: Вычитание дробей.
     Использует: LCM_NN_N, MUL_ZZ_Z, SUB_ZZ_Z
     """
-    pass
+    num_a, den_a = a
+    num_b, den_b = b
+
+    lcm_den = LCM_NN_N(den_a, den_b)
+
+    mul_a = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_a))[0]
+    mul_b = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_b))[0]
+
+    term1 = MUL_ZZ_Z(num_a, mul_a)
+    term2 = MUL_ZZ_Z(num_b, mul_b)
+    res_num = SUB_ZZ_Z(term1, term2)
+
+    return RED_Q_Q((res_num, lcm_den))
 
 
 def MUL_QQ_Q(a: Rational, b: Rational) -> Rational:
@@ -88,7 +112,13 @@ def MUL_QQ_Q(a: Rational, b: Rational) -> Rational:
     Q-7: Умножение дробей.
     Использует: MUL_ZZ_Z
     """
-    pass
+    num_a, den_a = a
+    num_b, den_b = b
+
+    res_num = MUL_ZZ_Z(num_a, num_b)
+    res_den = ABS_Z_N(MUL_ZZ_Z(TRANS_N_Z(den_a), TRANS_N_Z(den_b)))
+
+    return RED_Q_Q((res_num, res_den))
 
 
 def DIV_QQ_Q(a: Rational, b: Rational) -> Rational:
@@ -96,4 +126,13 @@ def DIV_QQ_Q(a: Rational, b: Rational) -> Rational:
     Q-8: Деление дробей (делитель != 0).
     Использует: MUL_ZZ_Z
     """
-    pass
+    num_a, den_a = a
+    num_b, den_b = b
+
+    if num_b[1] == 0 and (len(num_b[2]) == 0 or all(d == 0 for d in num_b[2])):
+        raise ZeroDivisionError("Деление на ноль запрещено")
+
+    res_num = MUL_ZZ_Z(num_a, TRANS_N_Z(den_b))
+    res_den = ABS_Z_N(MUL_ZZ_Z(TRANS_N_Z(den_a), num_b))
+
+    return RED_Q_Q((res_num, res_den))
