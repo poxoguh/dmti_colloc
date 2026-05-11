@@ -10,11 +10,9 @@
 """
 Aвтор модуля: Лунева Е.П.
 """
-
 from typing import List, Tuple
-from natural import ABS_Z_N, GCF_NN_N, LCM_NN_N
-from integer import DIV_ZZ_Z, MUL_ZZ_Z, ADD_ZZ_Z, SUB_ZZ_Z, TRANS_N_Z, TRANS_Z_N
-
+from natural import GCF_NN_N, LCM_NN_N
+from integer import ABS_Z_N, DIV_ZZ_Z, MUL_ZZ_Z, ADD_ZZ_Z, SUB_ZZ_Z, TRANS_N_Z, TRANS_Z_N
 Natural = Tuple[int, List[int]]
 Integer = Tuple[int, int, List[int]]
 Rational = Tuple[Integer, Natural]
@@ -33,8 +31,7 @@ def RED_Q_Q(a: Rational) -> Rational:
     
     # Сокращаем дробь, деля числитель и знаменатель на НОД
     new_numerator = DIV_ZZ_Z(numerator, TRANS_N_Z(gcd))
-    new_denominator = DIV_ZZ_Z(TRANS_N_Z(denominator), TRANS_N_Z(gcd))[1]  # берём только натуральную часть
-    
+    new_denominator = TRANS_Z_N(DIV_ZZ_Z(TRANS_N_Z(denominator), TRANS_N_Z(gcd))) # берём только натуральную часть   
     return new_numerator, new_denominator
 
 
@@ -77,8 +74,8 @@ def ADD_QQ_Q(a: Rational, b: Rational) -> Rational:
 
     lcm_den = LCM_NN_N(den_a, den_b)
 
-    mul_a = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_a))[0]
-    mul_b = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_b))[0]
+    mul_a = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_a))
+    mul_b = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_b))
 
     term1 = MUL_ZZ_Z(num_a, mul_a)
     term2 = MUL_ZZ_Z(num_b, mul_b)
@@ -97,8 +94,8 @@ def SUB_QQ_Q(a: Rational, b: Rational) -> Rational:
 
     lcm_den = LCM_NN_N(den_a, den_b)
 
-    mul_a = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_a))[0]
-    mul_b = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_b))[0]
+    mul_a = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_a))
+    mul_b = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_b))
 
     term1 = MUL_ZZ_Z(num_a, mul_a)
     term2 = MUL_ZZ_Z(num_b, mul_b)

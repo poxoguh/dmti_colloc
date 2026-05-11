@@ -223,7 +223,7 @@ def tokenize(expr: str) -> list:
             continue
 
         # операторы + и * — всегда бинарные
-        if ch in '+*':
+        if ch in '+*/':
             tokens.append(ch)
             i += 1
             continue
@@ -260,18 +260,15 @@ def tokenize(expr: str) -> list:
             while i < n and expr[i].isdigit():
                 num += expr[i]
                 i += 1
-            # дробь: 3/4
-            if i < n and expr[i] == '/':
+            # дробь только если / идёт СРАЗУ после цифры (без пробела)
+            if i < n and expr[i] == '/' and (i + 1 < n and expr[i + 1].isdigit()):
                 num += '/'
                 i += 1
-                if i >= n or not expr[i].isdigit():
-                    raise ValueError(f"Некорректная дробь после '{num}'")
                 while i < n and expr[i].isdigit():
                     num += expr[i]
                     i += 1
             tokens.append(num)
             continue
-
         raise ValueError(f"Недопустимый символ: '{ch}'")
 
     return tokens
@@ -283,13 +280,37 @@ def tokenize(expr: str) -> list:
 
 def apply_op(left: str, op: str, right: str) -> str:
     """Применяет операцию к двум строковым операндам, возвращает строку."""
-    t = detect_type(left)
+    t_left  = detect_type(left)
+    t_right = detect_type(right)
+
+    # повышение типа: N < Z < Q
+    rank = {"N": 0, "Z": 1, "Q": 2}
+    t = t_left if rank.get(t_left, 0) >= rank.get(t_right, 0) else t_right
+
+    # приводим оба операнда к нужному типу
+    def promote(s, from_t, to_t):
+        if from_t == to_t:
+            return s
+        if to_t == "Z":
+            # N → Z: просто добавляем знак +
+            return s  # parse_int справится с "123"
+        if to_t == "Q":
+            # N или Z → Q: добавляем знаменатель /1
+            return s + "/1" if '/' not in s else s
+        return s
+
+    left  = promote(left,  t_left,  t)
+    right = promote(right, t_right, t)
 
     ops = {
         "N": {'+': "ADD_NN_N", '-': "SUB_NN_N", '*': "MUL_NN_N"},
         "Z": {'+': "ADD_ZZ_Z", '-': "SUB_ZZ_Z", '*': "MUL_ZZ_Z"},
-        "Q": {'+': "ADD_QQ_Q", '-': "SUB_QQ_Q", '*': "MUL_QQ_Q"},
+        "Q": {'+': "ADD_QQ_Q", '-': "SUB_QQ_Q", '*': "MUL_QQ_Q", '/': "DIV_QQ_Q"},
     }
+    if op == '/':
+        t = "Q"
+        left  = promote(left,  t_left,  "Q")
+        right = promote(right, t_right, "Q")
 
     if t not in ops:
         raise NotImplementedError(f"Выражения для типа '{t}' не поддерживаются")
@@ -298,7 +319,6 @@ def apply_op(left: str, op: str, right: str) -> str:
 
     result = COMMANDS[ops[t][op]](left, right)
     return format_value(result)
-
 
 def eval_parentheses(tokens: list) -> list:
     """
