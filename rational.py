@@ -126,10 +126,16 @@ def DIV_QQ_Q(a: Rational, b: Rational) -> Rational:
     num_a, den_a = a
     num_b, den_b = b
 
-    if num_b[1] == 0 and (len(num_b[2]) == 0 or all(d == 0 for d in num_b[2])):
+    # Проверка делителя на ноль
+    if num_b[1] == 0 and num_b[2] == [0]:
         raise ZeroDivisionError("Деление на ноль запрещено")
 
     res_num = MUL_ZZ_Z(num_a, TRANS_N_Z(den_b))
     res_den = ABS_Z_N(MUL_ZZ_Z(TRANS_N_Z(den_a), num_b))
+
+    if num_b[0] == 1:  # sign == 1 означает отрицательное число
+        # Если результат не ноль, меняем знак (0 ↔ 1)
+        if not (res_num[1] == 0 and res_num[2] == [0]):
+            res_num = (1 - res_num[0], res_num[1], res_num[2])
 
     return RED_Q_Q((res_num, res_den))
