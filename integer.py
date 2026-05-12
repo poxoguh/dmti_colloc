@@ -170,8 +170,16 @@ def DIV_ZZ_Z(a: Integer, b: Integer) -> Integer:
 def MOD_ZZ_Z(a: Integer, b: Integer) -> Integer:
     """
     Z-10: Остаток от деления целого на целое (делитель != 0).
-    Использует: DIV_ZZ_Z, MUL_ZZ_Z, SUB_ZZ_Z, MUL_ZM_Z
+    Возвращает всегда НЕОТРИЦАТЕЛЬНЫЙ остаток (0 <= r < |b|).
+    Использует: DIV_ZZ_Z, MUL_ZZ_Z, SUB_ZZ_Z, ADD_ZZ_Z, ABS_Z_N, TRANS_N_Z
     """
+    # 1. Вычисляем остаток по стандартному делению
     q = DIV_ZZ_Z(a, b)
-    prod = MUL_ZZ_Z(b, q)
-    return SUB_ZZ_Z(a, prod)
+    r = SUB_ZZ_Z(a, MUL_ZZ_Z(b, q))
+    
+    # 2. Если остаток отрицательный (sign == 1), корректируем: r = r + |b|
+    #    (Ноль имеет sign == 0, поэтому проверка точная)
+    if r[0] == 1 and not (r[1] == 0 and r[2] == [0]):
+        r = ADD_ZZ_Z(r, TRANS_N_Z(ABS_Z_N(b)))
+        
+    return r
