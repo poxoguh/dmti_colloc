@@ -169,7 +169,7 @@ def MUL_ND_N(a: Natural, d: int) -> Natural:
     return final_n, res[:final_n + 1]
 
 
-def MUL_Nk_N(a: Natural, k: int) -> Natural:
+def MUL_NK_N(a: Natural, k: int) -> Natural:
     """
     N-7: Умножение натурального числа на 10^k, k — натуральное.
     """
@@ -191,7 +191,7 @@ def MUL_NN_N(a: Natural, b: Natural) -> Natural:
     for i in range(nb + 1):
         if Ab[i] != 0:
             term = MUL_ND_N(a, Ab[i])
-            term_shifted = MUL_Nk_N(term, i)
+            term_shifted = MUL_NK_N(term, i)
             res = ADD_NN_N(res, term_shifted)
             
     return res
@@ -209,13 +209,13 @@ def SUB_NDN_N(a: Natural, d: int, b: Natural) -> Natural:
     return SUB_NN_N(a, prod)
 
 
-def DIV_NN_Dk(a: Natural, b: Natural, k: int) -> int:
+def DIV_NN_DK(a: Natural, b: Natural, k: int) -> int:
     """
     N-10: Вычисление первой цифры деления большего натурального на меньшее,
     домноженное на 10^k, где k — номер позиции этой цифры.
     Использует: MUL_Nk_N, COM_NN_D
     """
-    b_shifted = MUL_Nk_N(b, k)
+    b_shifted = MUL_NK_N(b, k)
     
     for q in range(9, -1, -1):
         prod = MUL_ND_N(b_shifted, q)
@@ -225,29 +225,28 @@ def DIV_NN_Dk(a: Natural, b: Natural, k: int) -> int:
 
 
 def DIV_NN_N(a: Natural, b: Natural) -> Natural:
-    """
-    N-11: Неполное частное от деления первого натурального на второе (делитель != 0).
-    Использует: DIV_NN_Dk, SUB_NDN_N
-    """
+    """N-11: Неполное частное от деления."""
     if not NZER_N_B(b):
         raise ValueError("Делитель не может быть равен нулю")
-        
-    na, _ = a
-    nb, _ = b
-    
     if COM_NN_D(a, b) == 1:
         return 0, [0]
         
+    na, _ = a
+    nb, _ = b
     max_k = na - nb
     quotient = [0] * (max_k + 1)
     remainder = a
-    
+
     for k in range(max_k, -1, -1):
-        q = DIV_NN_Dk(remainder, b, k)
-        quotient[k] = q
-        if q > 0:
-            remainder = SUB_NDN_N(remainder, q, b)
-            
+        b_shifted = MUL_NK_N(b, k) 
+        if COM_NN_D(remainder, b_shifted) == 1:
+            quotient[k] = 0
+        else:
+            q = DIV_NN_DK(remainder, b, k)
+            quotient[k] = q
+            if q > 0:
+                remainder = SUB_NDN_N(remainder, q, b_shifted)
+                
     final_n = len(quotient) - 1
     while final_n > 0 and quotient[final_n] == 0:
         final_n -= 1
@@ -268,12 +267,11 @@ def MOD_NN_N(a: Natural, b: Natural) -> Natural:
     return SUB_NN_N(a, prod)
 
 def GCF_NN_N(a: Natural, b: Natural) -> Natural:
-    """
-    N-13: НОД натуральных чисел.
-    Использует: MOD_NN_N, COM_NN_D, NZER_N_B
-    """
+    """N-13: НОД натуральных чисел."""
     x, y = a, b
     while NZER_N_B(y):
+        if COM_NN_D(x, y) == 1:  # Если x < y, меняем местами
+            x, y = y, x
         x, y = y, MOD_NN_N(x, y)
     return x
 
