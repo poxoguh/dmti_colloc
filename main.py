@@ -40,10 +40,10 @@ HELP = """
   ADD_NN_N  <a> <b>        сложение
   SUB_NN_N  <a> <b>        вычитание (a >= b)
   MUL_ND_N  <a> <d>        умножение на цифру d
-  MUL_Nk_N  <a> <k>        умножение на 10^k
+  MUL_NK_N  <a> <k>        умножение на 10^k
   MUL_NN_N  <a> <b>        умножение
   SUB_NDN_N <a> <d> <b>    a - d*b (результат >= 0)
-  DIV_NN_Dk <a> <b> <k>    первая цифра деления
+  DIV_NN_DK <a> <b> <k>    первая цифра деления
   DIV_NN_N  <a> <b>        целая часть a/b
   MOD_NN_N  <a> <b>        остаток a mod b
   GCF_NN_N  <a> <b>        НОД
