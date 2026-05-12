@@ -8,7 +8,7 @@
 # Пример: дробь -3/4 → ((1, 0, [3]), (0, [4]))
 
 """
-Aвтор модуля: Лунева Е.П.
+Aвтор модуля: Лунёва Е.П.
 """
 from typing import List, Tuple
 from natural import GCF_NN_N, LCM_NN_N
@@ -25,13 +25,17 @@ def RED_Q_Q(a: Rational) -> Rational:
     """
     numerator, denominator = a
     
-    # Находим НОД модуля числителя и знаменателя
+    #  1. Защита от краха при нулевом числителе или знаменателе
+    if numerator == (0, 0, [0]) or denominator == (0, [0]):
+        return ((0, 0, [0]), (0, [1]))
+
+    # 2. Находим НОД модуля числителя и знаменателя
     abs_numerator = ABS_Z_N(numerator)
     gcd = GCF_NN_N(abs_numerator, denominator)
-    
-    # Сокращаем дробь, деля числитель и знаменатель на НОД
+
+    # 3. Сокращаем дробь
     new_numerator = DIV_ZZ_Z(numerator, TRANS_N_Z(gcd))
-    new_denominator = TRANS_Z_N(DIV_ZZ_Z(TRANS_N_Z(denominator), TRANS_N_Z(gcd))) # берём только натуральную часть   
+    new_denominator = TRANS_Z_N(DIV_ZZ_Z(TRANS_N_Z(denominator), TRANS_N_Z(gcd)))
     return new_numerator, new_denominator
 
 
