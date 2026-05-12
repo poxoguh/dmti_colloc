@@ -13,10 +13,11 @@ Aвтор модуля: <Крепышев М.М>
 
 import sys
 import re
+import readline
 
 HELP = """
 ╔══════════════════════════════════════════════════════════╗
-║           CAS — Система компьютерной алгебры            ║
+║           CAS — Система компьютерной алгебры             ║
 ╚══════════════════════════════════════════════════════════╝
 
 Два режима ввода:
@@ -126,14 +127,10 @@ def parse_arg(arg: str, typ: str):
 
 def detect_type(s: str) -> str:
     """Определяет тип значения по его строковому представлению."""
-    if 'x' in s:
-        return "P"
-    if '/' in s:
-        return "Q"
-    if re.match(r'^-\d+$', s):
-        return "Z"
-    if re.match(r'^\d+$', s):
-        return "N"
+    if 'x' in s: return "P"
+    if '/' in s: return "Q"
+    if re.match(r'^-\d+$', s): return "Z"
+    if re.match(r'^\d+$', s): return "N"
     raise ValueError(f"Не удалось определить тип: '{s}'")
 
 
@@ -279,24 +276,15 @@ def tokenize(expr: str) -> list:
 # ──────────────────────────────────────────────
 
 def apply_op(left: str, op: str, right: str) -> str:
-    """Применяет операцию к двум строковым операндам, возвращает строку."""
     t_left  = detect_type(left)
     t_right = detect_type(right)
-
-    # повышение типа: N < Z < Q
     rank = {"N": 0, "Z": 1, "Q": 2}
     t = t_left if rank.get(t_left, 0) >= rank.get(t_right, 0) else t_right
 
-    # приводим оба операнда к нужному типу
     def promote(s, from_t, to_t):
-        if from_t == to_t:
-            return s
-        if to_t == "Z":
-            # N → Z: просто добавляем знак +
-            return s  # parse_int справится с "123"
-        if to_t == "Q":
-            # N или Z → Q: добавляем знаменатель /1
-            return s + "/1" if '/' not in s else s
+        if from_t == to_t: return s
+        if to_t == "Z": return s
+        if to_t == "Q": return s + "/1" if '/' not in s else s
         return s
 
     left  = promote(left,  t_left,  t)
@@ -312,10 +300,8 @@ def apply_op(left: str, op: str, right: str) -> str:
         left  = promote(left,  t_left,  "Q")
         right = promote(right, t_right, "Q")
 
-    if t not in ops:
-        raise NotImplementedError(f"Выражения для типа '{t}' не поддерживаются")
-    if op not in ops[t]:
-        raise ValueError(f"Неизвестная операция: '{op}'")
+    if t not in ops: raise NotImplementedError(f"Выражения для типа '{t}' не поддерживаются")
+    if op not in ops[t]: raise ValueError(f"Неизвестная операция: '{op}'")
 
     result = COMMANDS[ops[t][op]](left, right)
     return format_value(result)
@@ -415,58 +401,27 @@ def eval_expression(expr: str) -> str:
 # ──────────────────────────────────────────────
 
 def build_commands() -> dict:
-    from natural import (
-        COM_NN_D, NZER_N_B, ADD_1N_N, ADD_NN_N,
-        SUB_NN_N, MUL_ND_N, MUL_Nk_N, MUL_NN_N,
-        SUB_NDN_N, DIV_NN_Dk, DIV_NN_N, MOD_NN_N,
-        GCF_NN_N, LCM_NN_N
-    )
-    from integer import (
-        ABS_Z_N, POZ_Z_D, MUL_ZM_Z, TRANS_N_Z,
-        TRANS_Z_N, ADD_ZZ_Z, SUB_ZZ_Z, MUL_ZZ_Z,
-        DIV_ZZ_Z, MOD_ZZ_Z
-    )
-    from rational import (
-        RED_Q_Q, INT_Q_B, TRANS_Z_Q, TRANS_Q_Z,
-        ADD_QQ_Q, SUB_QQ_Q, MUL_QQ_Q, DIV_QQ_Q
-    )
+    from natural import (COM_NN_D, NZER_N_B, ADD_1N_N, ADD_NN_N, SUB_NN_N, MUL_ND_N, MUL_NK_N, MUL_NN_N, SUB_NDN_N, DIV_NN_DK, DIV_NN_N, MOD_NN_N, GCF_NN_N, LCM_NN_N)
+    from integer import (ABS_Z_N, POZ_Z_D, MUL_ZM_Z, TRANS_N_Z, TRANS_Z_N, ADD_ZZ_Z, SUB_ZZ_Z, MUL_ZZ_Z, DIV_ZZ_Z, MOD_ZZ_Z)
+    from rational import (RED_Q_Q, INT_Q_B, TRANS_Z_Q, TRANS_Q_Z, ADD_QQ_Q, SUB_QQ_Q, MUL_QQ_Q, DIV_QQ_Q)
 
     return {
-        # — Модуль N —
-        "COM_NN_D":  wrap(COM_NN_D,  ["N", "N"]),
-        "NZER_N_B":  wrap(NZER_N_B,  ["N"]),
-        "ADD_1N_N":  wrap(ADD_1N_N,  ["N"]),
-        "ADD_NN_N":  wrap(ADD_NN_N,  ["N", "N"]),
-        "SUB_NN_N":  wrap(SUB_NN_N,  ["N", "N"]),
-        "MUL_ND_N":  wrap(MUL_ND_N,  ["N", "int"]),
-        "MUL_Nk_N":  wrap(MUL_Nk_N,  ["N", "int"]),
-        "MUL_NN_N":  wrap(MUL_NN_N,  ["N", "N"]),
-        "SUB_NDN_N": wrap(SUB_NDN_N, ["N", "int", "N"]),
-        "DIV_NN_Dk": wrap(DIV_NN_Dk, ["N", "N", "int"]),
-        "DIV_NN_N":  wrap(DIV_NN_N,  ["N", "N"]),
-        "MOD_NN_N":  wrap(MOD_NN_N,  ["N", "N"]),
-        "GCF_NN_N":  wrap(GCF_NN_N,  ["N", "N"]),
-        "LCM_NN_N":  wrap(LCM_NN_N,  ["N", "N"]),
-        # — Модуль Z —
-        "ABS_Z_N":   wrap(ABS_Z_N,   ["Z"]),
-        "POZ_Z_D":   wrap(POZ_Z_D,   ["Z"]),
-        "MUL_ZM_Z":  wrap(MUL_ZM_Z,  ["Z"]),
-        "TRANS_N_Z": wrap(TRANS_N_Z, ["N"]),
-        "TRANS_Z_N": wrap(TRANS_Z_N, ["Z"]),
-        "ADD_ZZ_Z":  wrap(ADD_ZZ_Z,  ["Z", "Z"]),
-        "SUB_ZZ_Z":  wrap(SUB_ZZ_Z,  ["Z", "Z"]),
-        "MUL_ZZ_Z":  wrap(MUL_ZZ_Z,  ["Z", "Z"]),
-        "DIV_ZZ_Z":  wrap(DIV_ZZ_Z,  ["Z", "Z"]),
-        "MOD_ZZ_Z":  wrap(MOD_ZZ_Z,  ["Z", "Z"]),
-        # — Модуль Q —
-        "RED_Q_Q":   wrap(RED_Q_Q,   ["Q"]),
-        "INT_Q_B":   wrap(INT_Q_B,   ["Q"]),
-        "TRANS_Z_Q": wrap(TRANS_Z_Q, ["Z"]),
-        "TRANS_Q_Z": wrap(TRANS_Q_Z, ["Q"]),
-        "ADD_QQ_Q":  wrap(ADD_QQ_Q,  ["Q", "Q"]),
-        "SUB_QQ_Q":  wrap(SUB_QQ_Q,  ["Q", "Q"]),
-        "MUL_QQ_Q":  wrap(MUL_QQ_Q,  ["Q", "Q"]),
-        "DIV_QQ_Q":  wrap(DIV_QQ_Q,  ["Q", "Q"]),
+        "COM_NN_D":  wrap(COM_NN_D,  ["N", "N"]), "NZER_N_B":  wrap(NZER_N_B,  ["N"]),
+        "ADD_1N_N":  wrap(ADD_1N_N,  ["N"]),      "ADD_NN_N":  wrap(ADD_NN_N,  ["N", "N"]),
+        "SUB_NN_N":  wrap(SUB_NN_N,  ["N", "N"]), "MUL_ND_N":  wrap(MUL_ND_N,  ["N", "int"]),
+        "MUL_NK_N":  wrap(MUL_NK_N,  ["N", "int"]), "MUL_NN_N": wrap(MUL_NN_N,  ["N", "N"]),
+        "SUB_NDN_N": wrap(SUB_NDN_N, ["N", "int", "N"]), "DIV_NN_DK": wrap(DIV_NN_DK, ["N", "N", "int"]),
+        "DIV_NN_N":  wrap(DIV_NN_N,  ["N", "N"]), "MOD_NN_N":  wrap(MOD_NN_N,  ["N", "N"]),
+        "GCF_NN_N":  wrap(GCF_NN_N,  ["N", "N"]), "LCM_NN_N":  wrap(LCM_NN_N,  ["N", "N"]),
+        "ABS_Z_N":   wrap(ABS_Z_N,   ["Z"]),      "POZ_Z_D":   wrap(POZ_Z_D,   ["Z"]),
+        "MUL_ZM_Z":  wrap(MUL_ZM_Z,  ["Z"]),      "TRANS_N_Z": wrap(TRANS_N_Z, ["N"]),
+        "TRANS_Z_N": wrap(TRANS_Z_N, ["Z"]),      "ADD_ZZ_Z":  wrap(ADD_ZZ_Z,  ["Z", "Z"]),
+        "SUB_ZZ_Z":  wrap(SUB_ZZ_Z,  ["Z", "Z"]), "MUL_ZZ_Z":  wrap(MUL_ZZ_Z,  ["Z", "Z"]),
+        "DIV_ZZ_Z":  wrap(DIV_ZZ_Z,  ["Z", "Z"]), "MOD_ZZ_Z":  wrap(MOD_ZZ_Z,  ["Z", "Z"]),
+        "RED_Q_Q":   wrap(RED_Q_Q,   ["Q"]),      "INT_Q_B":   wrap(INT_Q_B,   ["Q"]),
+        "TRANS_Z_Q": wrap(TRANS_Z_Q, ["Z"]),      "TRANS_Q_Z": wrap(TRANS_Q_Z, ["Q"]),
+        "ADD_QQ_Q":  wrap(ADD_QQ_Q,  ["Q", "Q"]), "SUB_QQ_Q":  wrap(SUB_QQ_Q,  ["Q", "Q"]),
+        "MUL_QQ_Q":  wrap(MUL_QQ_Q,  ["Q", "Q"]), "DIV_QQ_Q":  wrap(DIV_QQ_Q,  ["Q", "Q"]),
     }
 
 
@@ -482,41 +437,38 @@ def dispatch(cmd: str, args: list):
 
 def repl():
     print(HELP)
+    
+    # Автодополнение команд по Tab
+    cmd_list = list(COMMANDS.keys())
+    def completer(text, state):
+        buffer = readline.get_line_buffer()
+        if ' ' not in buffer:
+            matches = [c for c in cmd_list if c.startswith(text.upper())]
+            try: return matches[state]
+            except IndexError: return None
+        return None
+    readline.set_completer(completer)
+    readline.set_completer_delims(' ')
+    readline.parse_and_bind('tab: complete')
+
     while True:
-        try:
-            line = input("cas> ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print("\nВыход.")
-            break
-
-        if not line:
-            continue
-        if line.lower() in ("exit", "quit", "q"):
-            print("Выход.")
-            break
-        if line.lower() == "help":
-            print(HELP)
-            continue
-
+        try: line = input("cas> ").strip()
+        except (EOFError, KeyboardInterrupt): print("\nВыход."); break
+        if not line: continue
+        if line.lower() in ("exit", "quit", "q"): print("Выход."); break
+        if line.lower() == "help": print(HELP); continue
         try:
             parts = line.split()
             cmd = parts[0].upper()
-
             if cmd in COMMANDS:
-                # Режим команды: ADD_NN_N 123 456
                 result = dispatch(cmd, parts[1:])
                 print("  =", format_value(result))
             else:
-                # Режим выражения: (100 - 20) * 3
                 result = eval_expression(line)
                 print("  =", result)
-
-        except NotImplementedError as e:
-            print(f"  [!] {e}")
-        except ValueError as e:
-            print(f"  [!] Ошибка ввода: {e}")
-        except Exception as e:
-            print(f"  [!] Ошибка: {e}")
+        except NotImplementedError as e: print(f"  [!] {e}")
+        except ValueError as e: print(f"  [!] Ошибка ввода: {e}")
+        except Exception as e: print(f"  [!] Ошибка: {e}")
 
 
 # ──────────────────────────────────────────────
