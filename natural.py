@@ -170,13 +170,13 @@ def MUL_ND_N(a: Natural, d: int) -> Natural:
 
 
 def MUL_NK_N(a: Natural, k: int) -> Natural:
-    """
-    N-7: Умножение натурального числа на 10^k, k — натуральное.
-    """
+    """N-7: Умножение натурального числа на 10^k."""
     if k == 0:
         return a
-    
     n, A = a
+    # Явная обработка нуля: 0 * 10^k всегда остаётся 0 в канонической форме
+    if n == 0 and A == [0]:
+        return (0, [0])
     return n + k, [0] * k + A
 
 
@@ -268,10 +268,12 @@ def MOD_NN_N(a: Natural, b: Natural) -> Natural:
 
 def GCF_NN_N(a: Natural, b: Natural) -> Natural:
     """N-13: НОД натуральных чисел."""
+    # Защита от нуля: НОД(0, x) = x, НОД(x, 0) = x
+    if not NZER_N_B(a): return b
+    if not NZER_N_B(b): return a
+    
     x, y = a, b
     while NZER_N_B(y):
-        if COM_NN_D(x, y) == 1:  # Если x < y, меняем местами
-            x, y = y, x
         x, y = y, MOD_NN_N(x, y)
     return x
 
