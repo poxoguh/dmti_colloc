@@ -8,7 +8,7 @@
 # Пример: дробь -3/4 → ((1, 0, [3]), (0, [4]))
 
 """
-Aвтор модуля: Лунева Е.П.
+Aвтор модуля: Лунёва Е.П.
 """
 from typing import List, Tuple
 from natural import GCF_NN_N, LCM_NN_N
@@ -25,13 +25,17 @@ def RED_Q_Q(a: Rational) -> Rational:
     """
     numerator, denominator = a
     
-    # Находим НОД модуля числителя и знаменателя
+    #  1. Защита от краха при нулевом числителе или знаменателе
+    if numerator == (0, 0, [0]) or denominator == (0, [0]):
+        return ((0, 0, [0]), (0, [1]))
+
+    # 2. Находим НОД модуля числителя и знаменателя
     abs_numerator = ABS_Z_N(numerator)
     gcd = GCF_NN_N(abs_numerator, denominator)
-    
-    # Сокращаем дробь, деля числитель и знаменатель на НОД
+
+    # 3. Сокращаем дробь
     new_numerator = DIV_ZZ_Z(numerator, TRANS_N_Z(gcd))
-    new_denominator = TRANS_Z_N(DIV_ZZ_Z(TRANS_N_Z(denominator), TRANS_N_Z(gcd))) # берём только натуральную часть   
+    new_denominator = TRANS_Z_N(DIV_ZZ_Z(TRANS_N_Z(denominator), TRANS_N_Z(gcd)))
     return new_numerator, new_denominator
 
 
@@ -126,10 +130,16 @@ def DIV_QQ_Q(a: Rational, b: Rational) -> Rational:
     num_a, den_a = a
     num_b, den_b = b
 
-    if num_b[1] == 0 and (len(num_b[2]) == 0 or all(d == 0 for d in num_b[2])):
+    # Проверка делителя на ноль
+    if num_b[1] == 0 and num_b[2] == [0]:
         raise ZeroDivisionError("Деление на ноль запрещено")
 
     res_num = MUL_ZZ_Z(num_a, TRANS_N_Z(den_b))
     res_den = ABS_Z_N(MUL_ZZ_Z(TRANS_N_Z(den_a), num_b))
+
+    if num_b[0] == 1:  # sign == 1 означает отрицательное число
+        # Если результат не ноль, меняем знак (0 ↔ 1)
+        if not (res_num[1] == 0 and res_num[2] == [0]):
+            res_num = (1 - res_num[0], res_num[1], res_num[2])
 
     return RED_Q_Q((res_num, res_den))
