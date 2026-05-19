@@ -10,7 +10,9 @@
 #          число  123 → (0, 2, [3, 2, 1])
 
 """
-Автор модуля: Гришко С.В (гр. 5385)
+@file integer.py
+@brief Реализация модуля Z (целые числа).
+@author Гришко С.В (гр. 5385)
 """
 
 from typing import List, Tuple
@@ -25,16 +27,19 @@ Integer = Tuple[int, int, List[int]]
 
 def ABS_Z_N(a: Integer) -> Natural:
     """
-    Z-1: Абсолютная величина целого числа, результат — натуральное.
+    @brief Z-1: Абсолютная величина целого числа, результат — натуральное.
+    @param a Целое число
+    @return Натуральное число (модуль)
     """
     _, n, A = a
-    return (n, A.copy())
+    return (n, A.copy()) # Отбрасываем знак
 
 
 def POZ_Z_D(a: Integer) -> int:
     """
-    Z-2: Определение положительности числа.
-    Возвращает: 2 — положительное, 0 — ноль, 1 — отрицательное.
+    @brief Z-2: Определение положительности числа.
+    @param a Целое число
+    @return 2 — положительное, 0 — ноль, 1 — отрицательное
     """
     sign, n, A = a
     # Ноль: индекс 0 и единственная цифра 0
@@ -45,13 +50,15 @@ def POZ_Z_D(a: Integer) -> int:
 
 def MUL_ZM_Z(a: Integer) -> Integer:
     """
-    Z-3: Умножение целого на (-1).
+    @brief Z-3: Умножение целого на (-1).
+    @param a Целое число
+    @return Целое число с противоположным знаком
     """
     sign, n, A = a
     # Ноль всегда остаётся со знаком 0
     if n == 0 and A[0] == 0:
         return (0, 0, [0])
-    new_sign = 1 - sign
+    new_sign = 1 - sign # Меняем знак на противоположный
     # Нормализация: убираем ведущие нули
     while n > 0 and A[n] == 0:
         n -= 1
@@ -60,34 +67,41 @@ def MUL_ZM_Z(a: Integer) -> Integer:
 
 def TRANS_N_Z(a: Natural) -> Integer:
     """
-    Z-4: Преобразование натурального в целое.
+    @brief Z-4: Преобразование натурального в целое.
+    @param a Натуральное число
+    @return Целое число (неотрицательное)
     """
     n, A = a
-    return (0, n, A.copy())
+    return (0, n, A.copy()) # Добавляем + (0) к числу
 
 
 def TRANS_Z_N(a: Integer) -> Natural:
     """
-    Z-5: Преобразование целого неотрицательного в натуральное.
+    @brief Z-5: Преобразование целого неотрицательного в натуральное.
+    @param a Целое неотрицательное число
+    @return Натуральное число
     """
     _, n, A = a
-    return (n, A.copy())
+    return (n, A.copy()) # Отбрасываем знак
 
 
 def ADD_ZZ_Z(a: Integer, b: Integer) -> Integer:
     """
-    Z-6: Сложение целых чисел.
-    Использует: POZ_Z_D, ABS_Z_N, COM_NN_D, ADD_NN_N, SUB_NN_N, MUL_ZM_Z
+    @brief Z-6: Сложение целых чисел.
+    @param a Первое целое число
+    @param b Второе целое число
+    @return Сумма целых чисел
+    @note Использует: POZ_Z_D, ABS_Z_N, COM_NN_D, ADD_NN_N, SUB_NN_N, MUL_ZM_Z
     """
     sign_a, n_a, A_a = a
     sign_b, n_b, A_b = b
-    
+
     # Обработка нуля
     if n_a == 0 and A_a[0] == 0:
         return (sign_b, n_b, A_b.copy())
     if n_b == 0 and A_b[0] == 0:
         return (sign_a, n_a, A_a.copy())
-    
+
     abs_a = ABS_Z_N(a)
     abs_b = ABS_Z_N(b)
 
@@ -95,8 +109,8 @@ def ADD_ZZ_Z(a: Integer, b: Integer) -> Integer:
     if sign_a == sign_b:
         res_abs = ADD_NN_N(abs_a, abs_b)
         return (sign_a, res_abs[0], list(res_abs[1]))
-    
-    # Разные знаки: вычитаем меньший модуль из большего
+
+    # Разные знаки: вычитаем меньший модуль из большего, берем знак большего
     cmp = COM_NN_D(abs_a, abs_b)
     if cmp == 2:  # |a| > |b|
         res_abs = SUB_NN_N(abs_a, abs_b)
@@ -121,8 +135,11 @@ def ADD_ZZ_Z(a: Integer, b: Integer) -> Integer:
 
 def SUB_ZZ_Z(a: Integer, b: Integer) -> Integer:
     """
-    Z-7: Вычитание целых чисел.
-    Использует: POZ_Z_D, ABS_Z_N, COM_NN_D, ADD_NN_N, SUB_NN_N, MUL_ZM_Z
+    @brief Z-7: Вычитание целых чисел.
+    @param a Первое целое число
+    @param b Второе целое число
+    @return Разность целых чисел
+    @note Использует: POZ_Z_D, ABS_Z_N, COM_NN_D, ADD_NN_N, SUB_NN_N, MUL_ZM_Z
     """
     # a - b = a + (-b)
     return ADD_ZZ_Z(a, MUL_ZM_Z(b))
@@ -130,8 +147,11 @@ def SUB_ZZ_Z(a: Integer, b: Integer) -> Integer:
 
 def MUL_ZZ_Z(a: Integer, b: Integer) -> Integer:
     """
-    Z-8: Умножение целых чисел.
-    Использует: POZ_Z_D, ABS_Z_N, MUL_NN_N, MUL_ZM_Z
+    @brief Z-8: Умножение целых чисел.
+    @param a Первое целое число
+    @param b Второе целое число
+    @return Произведение целых чисел
+    @note Использует: POZ_Z_D, ABS_Z_N, MUL_NN_N, MUL_ZM_Z
     """
     sign_a, _, _ = a
     sign_b, _, _ = b
@@ -141,7 +161,7 @@ def MUL_ZZ_Z(a: Integer, b: Integer) -> Integer:
     res_abs = MUL_NN_N(abs_a, abs_b)
     # Знак результата: XOR
     new_sign = sign_a ^ sign_b
-    
+
     # Нормализация: если результат 0, знак должен быть 0
     if res_abs[0] == 0 and res_abs[1][0] == 0:
         return (0, 0, [0])
@@ -150,8 +170,11 @@ def MUL_ZZ_Z(a: Integer, b: Integer) -> Integer:
 
 def DIV_ZZ_Z(a: Integer, b: Integer) -> Integer:
     """
-    Z-9: Частное от деления целого на целое (делитель != 0).
-    Использует: ABS_Z_N, POZ_Z_D, DIV_NN_N, ADD_1N_N
+    @brief Z-9: Частное от деления целого на целое (делитель != 0).
+    @param a Делимое (целое число)
+    @param b Делитель (целое число, != 0)
+    @return Частное от деления
+    @note Использует: ABS_Z_N, POZ_Z_D, DIV_NN_N, ADD_1N_N
     """
     sign_a, _, _ = a
     sign_b, _, _ = b
@@ -159,8 +182,9 @@ def DIV_ZZ_Z(a: Integer, b: Integer) -> Integer:
     abs_b = ABS_Z_N(b)
 
     res_abs = DIV_NN_N(abs_a, abs_b)
+    # Знак результата: XOR
     new_sign = sign_a ^ sign_b
-    
+
     # Нормализация нуля
     if res_abs[0] == 0 and res_abs[1][0] == 0:
         return (0, 0, [0])
@@ -169,17 +193,19 @@ def DIV_ZZ_Z(a: Integer, b: Integer) -> Integer:
 
 def MOD_ZZ_Z(a: Integer, b: Integer) -> Integer:
     """
-    Z-10: Остаток от деления целого на целое (делитель != 0).
-    Возвращает всегда НЕОТРИЦАТЕЛЬНЫЙ остаток (0 <= r < |b|).
-    Использует: DIV_ZZ_Z, MUL_ZZ_Z, SUB_ZZ_Z, ADD_ZZ_Z, ABS_Z_N, TRANS_N_Z
+    @brief Z-10: Остаток от деления целого на целое (делитель != 0).
+    @param a Делимое (целое число)
+    @param b Делитель (целое число, != 0)
+    @return Неотрицательный остаток (0 <= r < |b|)
+    @note Использует: DIV_ZZ_Z, MUL_ZZ_Z, SUB_ZZ_Z, ADD_ZZ_Z, ABS_Z_N, TRANS_N_Z
     """
     # 1. Вычисляем остаток по стандартному делению
     q = DIV_ZZ_Z(a, b)
     r = SUB_ZZ_Z(a, MUL_ZZ_Z(b, q))
-    
+
     # 2. Если остаток отрицательный (sign == 1), корректируем: r = r + |b|
     #    (Ноль имеет sign == 0, поэтому проверка точная)
     if r[0] == 1 and not (r[1] == 0 and r[2] == [0]):
         r = ADD_ZZ_Z(r, TRANS_N_Z(ABS_Z_N(b)))
-        
+
     return r

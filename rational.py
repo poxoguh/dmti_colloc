@@ -8,11 +8,15 @@
 # Пример: дробь -3/4 → ((1, 0, [3]), (0, [4]))
 
 """
-Aвтор модуля: Лунёва Е.П.
+@file rational.py
+@brief Реализация модуля Q (рациональные числа).
+@author Лунёва Е.П. (гр. 5382)
 """
+
 from typing import List, Tuple
 from natural import GCF_NN_N, LCM_NN_N
 from integer import ABS_Z_N, DIV_ZZ_Z, MUL_ZZ_Z, ADD_ZZ_Z, SUB_ZZ_Z, TRANS_N_Z, TRANS_Z_N
+
 Natural = Tuple[int, List[int]]
 Integer = Tuple[int, int, List[int]]
 Rational = Tuple[Integer, Natural]
@@ -20,11 +24,13 @@ Rational = Tuple[Integer, Natural]
 
 def RED_Q_Q(a: Rational) -> Rational:
     """
-    Q-1: Сокращение дроби.
-    Использует: ABS_Z_N, GCF_NN_N, DIV_ZZ_Z
+    @brief Q-1: Сокращение дроби.
+    @param a Дробь
+    @return Сокращённая дробь
+    @note Использует: ABS_Z_N, GCF_NN_N, DIV_ZZ_Z
     """
     numerator, denominator = a
-    
+
     #  1. Защита от краха при нулевом числителе или знаменателе
     if numerator == (0, 0, [0]) or denominator == (0, [0]):
         return ((0, 0, [0]), (0, [1]))
@@ -41,8 +47,9 @@ def RED_Q_Q(a: Rational) -> Rational:
 
 def INT_Q_B(a: Rational) -> bool:
     """
-    Q-2: Проверка сокращённой дроби на целое.
-    Возвращает: True если знаменатель == 1, иначе False.
+    @brief Q-2: Проверка сокращённой дроби на целое.
+    @param a Дробь
+    @return True если знаменатель == 1, иначе False
     """
     _, denominator = a
     n, A = denominator
@@ -52,7 +59,9 @@ def INT_Q_B(a: Rational) -> bool:
 
 def TRANS_Z_Q(a: Integer) -> Rational:
     """
-    Q-3: Преобразование целого в дробное.
+    @brief Q-3: Преобразование целого в дробное.
+    @param a Целое число
+    @return Рациональное число
     """
     # Целое число a представляется как дробь a/1
     return a, (0, [1])
@@ -60,7 +69,10 @@ def TRANS_Z_Q(a: Integer) -> Rational:
 
 def TRANS_Q_Z(a: Rational) -> Integer:
     """
-    Q-4: Преобразование сокращённой дроби в целое (знаменатель == 1).
+    @brief Q-4: Преобразование сокращённой дроби в целое.
+    @param a Дробь
+    @return Целое число
+    @note Знаменатель должен быть равен 1
     """
     numerator, denominator = a
     if not INT_Q_B(a):
@@ -70,17 +82,23 @@ def TRANS_Q_Z(a: Rational) -> Integer:
 
 def ADD_QQ_Q(a: Rational, b: Rational) -> Rational:
     """
-    Q-5: Сложение дробей.
-    Использует: LCM_NN_N, MUL_ZZ_Z, ADD_ZZ_Z
+    @brief Q-5: Сложение дробей.
+    @param a Первая дробь
+    @param b Вторая дробь
+    @return Сумма дробей
+    @note Использует: LCM_NN_N, MUL_ZZ_Z, ADD_ZZ_Z
     """
     num_a, den_a = a
     num_b, den_b = b
 
+    # Находим НОК
     lcm_den = LCM_NN_N(den_a, den_b)
 
+    # Дополнительные множители для числителей
     mul_a = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_a))
     mul_b = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_b))
 
+    # Домножаем числители на дополнительные множители и складываем их
     term1 = MUL_ZZ_Z(num_a, mul_a)
     term2 = MUL_ZZ_Z(num_b, mul_b)
     res_num = ADD_ZZ_Z(term1, term2)
@@ -90,17 +108,23 @@ def ADD_QQ_Q(a: Rational, b: Rational) -> Rational:
 
 def SUB_QQ_Q(a: Rational, b: Rational) -> Rational:
     """
-    Q-6: Вычитание дробей.
-    Использует: LCM_NN_N, MUL_ZZ_Z, SUB_ZZ_Z
+    @brief Q-6: Вычитание дробей.
+    @param a Первая дробь
+    @param b Вторая дробь
+    @return Разность дробей
+    @note Использует: LCM_NN_N, MUL_ZZ_Z, SUB_ZZ_Z
     """
     num_a, den_a = a
     num_b, den_b = b
 
+    # Находим НОК
     lcm_den = LCM_NN_N(den_a, den_b)
 
+    # Дополнительные множители для числителей
     mul_a = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_a))
     mul_b = DIV_ZZ_Z(TRANS_N_Z(lcm_den), TRANS_N_Z(den_b))
 
+    # Домножаем числители на дополнительные множители и вычитаем их
     term1 = MUL_ZZ_Z(num_a, mul_a)
     term2 = MUL_ZZ_Z(num_b, mul_b)
     res_num = SUB_ZZ_Z(term1, term2)
@@ -110,8 +134,11 @@ def SUB_QQ_Q(a: Rational, b: Rational) -> Rational:
 
 def MUL_QQ_Q(a: Rational, b: Rational) -> Rational:
     """
-    Q-7: Умножение дробей.
-    Использует: MUL_ZZ_Z
+    @brief Q-7: Умножение дробей.
+    @param a Первая дробь
+    @param b Вторая дробь
+    @return Произведение дробей
+    @note Использует: MUL_ZZ_Z
     """
     num_a, den_a = a
     num_b, den_b = b
@@ -124,8 +151,11 @@ def MUL_QQ_Q(a: Rational, b: Rational) -> Rational:
 
 def DIV_QQ_Q(a: Rational, b: Rational) -> Rational:
     """
-    Q-8: Деление дробей (делитель != 0).
-    Использует: MUL_ZZ_Z
+    @brief Q-8: Деление дробей.
+    @param a Делимое (дробь)
+    @param b Делитель (дробь, != 0)
+    @return Частное от деления
+    @note Использует: MUL_ZZ_Z
     """
     num_a, den_a = a
     num_b, den_b = b
