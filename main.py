@@ -231,10 +231,10 @@ def tokenize(expr: str) -> list:
         # Обработка минуса (унарный или бинарный)
         if ch == '-':
             prev = tokens[-1] if tokens else None
-            if prev is None or prev in ('+', '-', '*', '('):
+            if prev is None or prev in ('+', '-', '*', '/', '('):
                 # Унарный минус: читаем всё слово целиком
                 i += 1; token = '-'
-                while i < n and expr[i] not in '+*/()' and not expr[i].isspace():
+                while i < n and expr[i] not in '+-*/()' and not expr[i].isspace():
                     token += expr[i]; i += 1
                 if token == '-': raise ValueError("Одиночный минус")
                 tokens.append(token)
@@ -245,7 +245,7 @@ def tokenize(expr: str) -> list:
         # Чтение числа или многочлена (слово)
         if ch.isdigit() or ch == 'x':
             token = ''
-            while i < n and expr[i] not in '+*/()' and not expr[i].isspace():
+            while i < n and expr[i] not in '+-*/()' and not expr[i].isspace():
                 token += expr[i]; i += 1
             if token: tokens.append(token)
             continue
@@ -266,16 +266,29 @@ def apply_op(left: str, op: str, right: str) -> str:
         if to_t == "P": return s  # parse_poly("1") работает корректно
         return s
 
+    # ИСПРАВЛЕНИЕ: Если вычитаем натуральные числа (N), и первое меньше второго,
+    # автоматически переводим операцию в кольцо целых чисел (Z)
+    if t == "N" and op == '-':
+        if int(left) < int(right):
+            t = "Z"
+
     l, r = promote(left, t_left, t), promote(right, t_right, t)
+    
     ops = {
         "N": {'+': "ADD_NN_N", '-': "SUB_NN_N", '*': "MUL_NN_N"},
         "Z": {'+': "ADD_ZZ_Z", '-': "SUB_ZZ_Z", '*': "MUL_ZZ_Z"},
         "Q": {'+': "ADD_QQ_Q", '-': "SUB_QQ_Q", '*': "MUL_QQ_Q", '/': "DIV_QQ_Q"},
         "P": {'+': "ADD_PP_P", '-': "SUB_PP_P", '*': "MUL_PP_P", '/': "DIV_PP_P"},
     }
-    if op == '/': t = "Q" if t != "P" else "P"; l, r = promote(left, t_left, t), promote(right, t_right, t)
     
-    if t not in ops or op not in ops[t]: raise NotImplementedError(f"Операция '{op}' для '{t}'")
+    # При делении всё, кроме многочленов, переводим в рациональные дроби (Q)
+    if op == '/': 
+        t = "Q" if t != "P" else "P"
+        l, r = promote(left, t_left, t), promote(right, t_right, t)
+    
+    if t not in ops or op not in ops[t]: 
+        raise NotImplementedError(f"Операция '{op}' для '{t}'")
+        
     return format_value(COMMANDS[ops[t][op]](l, r))
 
 def eval_parentheses(tokens: list) -> list:
