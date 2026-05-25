@@ -234,7 +234,7 @@ def GCF_PP_P(a: Polynomial, b: Polynomial) -> Polynomial:
     @return Наибольший общий делитель многочленов
     @note Использует: DEG_P_N, MOD_PP_P
     """
-    # Алгоритм Евклида для многочленов
+    # Алгоритм Евклида для многочленов: НОД(a, b) = НОД(b, a (mod b))
     while DEG_P_N(b) >= 0: a, b = b, MOD_PP_P(a, b)
     return a
 
